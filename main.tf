@@ -30,7 +30,7 @@ resource "azurerm_app_configuration" "app_configurations" {
   }
 
   dynamic "replica" {
-    for_each = each.value.replica != null ? [each.value.replica] : []
+    for_each = each.value.replica != null ? each.value.replica : []
     content {
       location = replica.value.location
       name     = replica.value.name
