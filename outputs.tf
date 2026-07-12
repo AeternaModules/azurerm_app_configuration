@@ -1,3 +1,7 @@
+output "app_configurations_id" {
+  description = "Map of id values across all app_configurations, keyed the same as var.app_configurations"
+  value       = { for k, v in azurerm_app_configuration.app_configurations : k => v.id }
+}
 output "app_configurations_data_plane_proxy_authentication_mode" {
   description = "Map of data_plane_proxy_authentication_mode values across all app_configurations, keyed the same as var.app_configurations"
   value       = { for k, v in azurerm_app_configuration.app_configurations : k => v.data_plane_proxy_authentication_mode }
