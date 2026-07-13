@@ -29,13 +29,13 @@ EOT
     location                                         = string
     name                                             = string
     resource_group_name                              = string
-    data_plane_proxy_authentication_mode             = optional(string) # Default: "Local"
-    data_plane_proxy_private_link_delegation_enabled = optional(bool)   # Default: false
-    local_auth_enabled                               = optional(bool)   # Default: true
+    data_plane_proxy_authentication_mode             = optional(string)
+    data_plane_proxy_private_link_delegation_enabled = optional(bool)
+    local_auth_enabled                               = optional(bool)
     public_network_access                            = optional(string)
-    purge_protection_enabled                         = optional(bool)   # Default: false
-    sku                                              = optional(string) # Default: "free"
-    soft_delete_retention_days                       = optional(number) # Default: 7
+    purge_protection_enabled                         = optional(bool)
+    sku                                              = optional(string)
+    soft_delete_retention_days                       = optional(number)
     tags                                             = optional(map(string))
     encryption = optional(object({
       identity_client_id       = optional(string)
@@ -50,38 +50,6 @@ EOT
       name     = string
     })))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.app_configurations : (
-        v.replica == null || (length(v.replica) >= 1)
-      )
-    ])
-    error_message = "Each replica list must contain at least 1 items"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.app_configurations : (
-        v.encryption == null || (v.encryption.identity_client_id == null || (can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", v.encryption.identity_client_id))))
-      )
-    ])
-    error_message = "must be a valid UUID"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.app_configurations : (
-        v.sku == null || (contains(["free", "developer", "standard", "premium"], v.sku))
-      )
-    ])
-    error_message = "must be one of: free, developer, standard, premium"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.app_configurations : (
-        v.soft_delete_retention_days == null || (v.soft_delete_retention_days >= 1 && v.soft_delete_retention_days <= 7)
-      )
-    ])
-    error_message = "must be between 1 and 7"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_app_configuration's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
@@ -106,6 +74,9 @@ EOT
   #   source:    location.EnhancedValidate: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
   # path: data_plane_proxy_authentication_mode
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: encryption.identity_client_id
+  #   condition: can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", value))
+  #   message:   must be a valid UUID
   # path: encryption.key_vault_key_identifier
   #   source:    validation.IsURLWithHTTPorHTTPS(...) - no translation rule yet, add one
   # path: identity.type
@@ -120,6 +91,12 @@ EOT
   #   source:    [from validate.ConfigurationStoreReplicaName] !matched
   # path: replica.location
   #   source:    location.EnhancedValidate: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
+  # path: sku
+  #   condition: contains(["free", "developer", "standard", "premium"], value)
+  #   message:   must be one of: free, developer, standard, premium
+  # path: soft_delete_retention_days
+  #   condition: value >= 1 && value <= 7
+  #   message:   must be between 1 and 7
   # path: tags
   #   condition: length(value) <= 50
   #   message:   [from tags.Validate: invalid when len(value) > 50]
