@@ -12,7 +12,7 @@ output "app_configurations_data_plane_proxy_private_link_delegation_enabled" {
 }
 output "app_configurations_encryption" {
   description = "Map of encryption values across all app_configurations, keyed the same as var.app_configurations"
-  value       = { for k, v in azurerm_app_configuration.app_configurations : k => v.encryption if v.encryption != null && length(v.encryption) > 0 }
+  value       = { for k, v in azurerm_app_configuration.app_configurations : k => one(v.encryption) if v.encryption != null && length(v.encryption) > 0 }
 }
 output "app_configurations_endpoint" {
   description = "Map of endpoint values across all app_configurations, keyed the same as var.app_configurations"
@@ -20,7 +20,7 @@ output "app_configurations_endpoint" {
 }
 output "app_configurations_identity" {
   description = "Map of identity values across all app_configurations, keyed the same as var.app_configurations"
-  value       = { for k, v in azurerm_app_configuration.app_configurations : k => v.identity if v.identity != null && length(v.identity) > 0 }
+  value       = { for k, v in azurerm_app_configuration.app_configurations : k => one(v.identity) if v.identity != null && length(v.identity) > 0 }
 }
 output "app_configurations_local_auth_enabled" {
   description = "Map of local_auth_enabled values across all app_configurations, keyed the same as var.app_configurations"
